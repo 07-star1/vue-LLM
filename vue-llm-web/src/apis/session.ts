@@ -4,7 +4,7 @@ import http from "@/utils/http"
  * @param userId:string
  * 
  */
-export const newSession = ({ userId }: { userId: string }) => {
+export const newAPI = ({ userId }: { userId: string }) => {
   return http({
     url: '/create',
     method: 'POST',
@@ -19,7 +19,7 @@ export const newSession = ({ userId }: { userId: string }) => {
  * @param sessionId:string
  * @returns 历史对话列表
  */
-export const hasHistoryList = ({ userId }: { userId: string }) => {
+export const historyListAPI = ({ userId }: { userId: string }) => {
   return http({
     url: '/history/list',
     method: 'POST',
@@ -28,7 +28,7 @@ export const hasHistoryList = ({ userId }: { userId: string }) => {
     }
   })
 }
-export const delAll = ({ userId }: { userId: string }) => {
+export const delAllAPI = ({ userId }: { userId: string }) => {
   return http({
     url: '/del/all',
     method: 'POST',
@@ -37,7 +37,7 @@ export const delAll = ({ userId }: { userId: string }) => {
     }
   })
 }
-export const delOne = ({ sessionId }: { sessionId: string }) => {
+export const delOneAPI = ({ sessionId }: { sessionId: string }) => {
   return http({
     url: '/del/one',
     method: 'POST',

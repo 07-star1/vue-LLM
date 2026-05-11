@@ -1,5 +1,7 @@
 import './styles/common.scss'
 import "./styles/markdown.scss"
+import "./styles/themes/dark.scss"
+import "./styles/themes/light.scss"
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'

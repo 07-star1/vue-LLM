@@ -3,13 +3,39 @@ import LayoutAside from './components/LayoutAside.vue'
 import LayoutMain from './components/LayoutMain.vue'
 import Login from '@/views/Login/index.vue'
 import { useElseStore } from '@/stores/elseStore'
-const elseStore = useElseStore()
+import { onMounted, onUnmounted } from 'vue'
 
+const elseStore = useElseStore()
+// 监听屏幕尺寸变化
+const handleResize = () => {
+  const width = window.innerWidth
+  if (width <= 1025) {
+    // 中屏和小屏：默认隐藏侧边栏
+    elseStore.setIsCollapse(true)
+  } else {
+    // 大屏：默认显示侧边栏
+    elseStore.setIsCollapse(false)
+  }
+}
+
+onMounted(() => {
+  handleResize() // 初始检查
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// 关闭侧边栏（点击遮罩时调用）
+const closeSidebar = () => {
+  elseStore.setIsCollapse(true)
+}
 </script>
 
 <template>
 
-  <div class="container">
+  <div class="container" >
     <div class="login-modal" v-if="elseStore.isLogin">
       <div class="modal-mask"></div>
       <div class="modal-wrapper">
@@ -20,6 +46,11 @@ const elseStore = useElseStore()
       <LayoutAside />
     </div>
     <div class="main">
+      <div 
+        v-if="!elseStore.isCollapse"
+        class="main-overlay"
+        @click="closeSidebar"
+      ></div>
       <LayoutMain />
     </div>
   </div>
@@ -27,12 +58,11 @@ const elseStore = useElseStore()
 </template>
 
 <style scoped lang="scss">
-.actice{
+.active{
     display: block;
 }
 .container {
   position: relative;
-  // min-width: 732px;
   height: 100%;
   display: flex;
   .login-modal {
@@ -68,11 +98,16 @@ const elseStore = useElseStore()
     flex: 1;
     height: 100%;
     min-width: 0; 
+    background-color: var(--color-bg-primary);
+    .main-overlay{
+      display: block;
+    }
   }
   .aside {
     max-width: 310px;
     height: 100%;
     transition: all 0.3s ease-in-out;
+    background-color: var(--color-bg-primary);
     &.active {
       display: none;
     }
@@ -80,49 +115,56 @@ const elseStore = useElseStore()
   
 }
 
-/* 小屏幕响应式处理 */
-@media screen and (max-width: 1012px) {
-  .container {
-    .aside {
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100%;
-      z-index: 100;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-      
-      &:not(.active) {
-        transform: translateX(0);
-      }
-    }
-    
-    .main {
-      width: 100%;
-      transition: transform 0.3s ease-in-out;
-    }
-    
-    /* 当侧边栏打开时，主内容向右偏移 */
-    .aside:not(.active) + .main {
-      transform: translateX(280px);
-    }
-  }
-}
-
-@media screen and (max-width: 758px) {
+// >768px and <1025px  图标、侧边栏、创建新对话的图标在左侧显示，侧边栏默认关闭，展开侧边栏时，主内容宽度减少310px
+@media screen and (min-width: 768px) and (max-width: 1025px) {
   .aside-mask{
     display: block;
   }
   
   .container {
     .aside {
-      width: 280px;
-      
-      &:not(.active) + .main {
-        transform: translateX(280px);
-      }
+      width: 310px;
     }
+    
+    .main {
+      width: 100%;
+      transition: transform 0.3s ease-in-out;
+    }
+  }
+}
+// <768px 顶部导航栏左侧图标点击显示侧边栏，右侧图标点击创建新对话，侧边栏默认关闭，展开侧边栏时，侧边栏覆盖在主内容上方
+@media screen and (max-width: 768px) {
+  .aside{
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 310px;
+    z-index: 200; // 侧边栏在遮罩之上
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    // transform: translateX(-100%); // 默认隐藏在左侧
+    
+    &.show {
+      transform: translateX(0); // 展开时滑入
+    }
+  }
+  .main{
+    width: 100%;
+    .main-overlay {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 150; // 在主内容上，但在侧边栏下
+      pointer-events: auto; // 确保可以点击
+      animation: fadeIn 0.3s ease;
+    }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 </style>

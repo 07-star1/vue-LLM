@@ -1,4 +1,5 @@
-import { newSession, delAll, delOne, hasHistoryList } from "@/apis/session"
+import { newAPI, delAllAPI, delOneAPI, historyListAPI } from "@/apis/session"
+import { ElMessage } from "element-plus"
 import { defineStore } from "pinia"
 import { ref } from "vue"
 export const useSessionStore = defineStore('session', () => {
@@ -14,24 +15,26 @@ export const useSessionStore = defineStore('session', () => {
   const curSession = ref()
   // 创建新对话 
   const creatNew = async ({ userId }: { userId: string }) => {
-    const res = await newSession({ userId })
-    console.log("创建新对话", res)
+    const res = await newAPI({ userId })
     localStorage.setItem('sessionId', res.data.data.sessionId)
   }
   // 获取历史对话列表
   const getHistoryList = async ({ userId }: { userId: string }) => {
-    const res = await hasHistoryList({ userId })
+    const res = await historyListAPI({ userId })
     historyList.value = res.data.data
-    console.log("获取历史对话列表", res)
   }
   // 删除所有历史对话
   const delAllHistory = async ({ userId }: { userId: string }) => {
-    await delAll({ userId })
+    if (historyList.value.length === 0) {
+      ElMessage.error("当前没有历史对话")
+      return
+    }
+    await delAllAPI({ userId })
     historyList.value = []
   }
   // 删除单个历史对话
   const delOneHistory = async ({ sessionId }: { sessionId: string }) => {
-    await delOne({ sessionId })
+    await delOneAPI({ sessionId })
     historyList.value = historyList.value.filter(item => item.sessionId !== sessionId)
   }
   return {

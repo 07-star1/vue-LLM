@@ -10,8 +10,10 @@ const sessionStore=useSessionStore()
 const elseStore=useElseStore()
 const chatStore=useChatStore()
 
-const user=JSON.parse(localStorage.getItem('user')||'')
-
+let user=localStorage.getItem('user')
+if(user){
+  user=JSON.parse(user)
+}
 // 创建新对话
 const toCreateNewSession=async ()=>{
   const userId=localStorage.getItem('userId')
@@ -22,10 +24,11 @@ const toCreateNewSession=async ()=>{
     return
   }
   chatStore.curChatList=[]
-  chatStore.title=""
+  chatStore.title="新对话"
   elseStore.setIsMain(true)
   // 清除旧的sessionId
   localStorage.removeItem('sessionId')
+  chatStore.curSessionId=""
   elseStore.setIsFirstSend(true)
   router.replace('/')
   await toGetHistoryList()
@@ -89,12 +92,24 @@ const toDelOneHistory=async (sessionId:string)=>{
     elseStore.setIsMain(false)
   }
 }
+// 关闭侧边栏
+const closeAside = () => {
+  elseStore.setIsCollapse(true)
+}
 onMounted(()=>toGetHistoryList())
 </script>
 
 <template>
 <div class="container">
-  <div class="mask-aside"></div>
+  <!-- 小屏时显示的关闭按钮 -->
+  <div class="close-btn" @click="closeAside">
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+      <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+    </svg> -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+      <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z"/>
+    </svg>
+  </div>
   <!-- 侧边栏 header -->
   <div class="nav">
     <div class="nav-main">
@@ -156,19 +171,19 @@ onMounted(()=>toGetHistoryList())
     <el-dropdown trigger="click">
       <div class="foot-main">
         <div class="user-avater">
-          <img :src="user.userInfo.avater||'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" alt="">
+          <img :src="user?.userInfo?.avater||'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" alt="">
         </div>
         <div class="user-name">
-          <span>{{user.userInfo.username||"用户"}}</span>
+          <span>{{user?.userInfo?.username||"用户"}}</span>
         </div>
       </div>
       <template #dropdown>
         <el-dropdown-menu class="custom-dropdown-menu">
-          <el-dropdown-item class="menu-item">
+          <el-dropdown-item class="menu-item" @click="elseStore.useTheme('light')">
             <el-icon><Sunny /></el-icon>
             亮色主题
           </el-dropdown-item>
-          <el-dropdown-item class="menu-item">
+          <el-dropdown-item class="menu-item" @click="elseStore.useTheme('dark')">
             <el-icon><Moon /></el-icon>
             暗色主题
           </el-dropdown-item>
@@ -176,9 +191,13 @@ onMounted(()=>toGetHistoryList())
             <el-icon><ChatDotRound /></el-icon>
             联系我们
           </el-dropdown-item>
-          <el-dropdown-item class="menu-item danger">
+          <el-dropdown-item class="menu-item danger" v-if="elseStore.isLogin">
             <el-icon><SwitchButton /></el-icon>
             退出登录
+          </el-dropdown-item>
+        <el-dropdown-item class="menu-item danger" v-else>
+            <el-icon><SwitchButton /></el-icon>
+            登录
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -194,18 +213,28 @@ onMounted(()=>toGetHistoryList())
   width: 310px;
   height: 100%;
   padding: 20px;
-  background-color: rgb(245, 247, 248);
   z-index:1001;
-  .mask-aside{
+
+    // 小屏关闭按钮
+  .close-btn {
     display: none;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); 
-    backdrop-filter: blur(2px);
-    z-index: 1000;
+    top: 28px;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+    // display: flex;
+    // align-items: center;
+    // justify-content: center;
+    cursor: pointer;
+    z-index: 1002;
+    line-height: 20px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+      color: #666;
+    }
   }
   .nav{
     width: 100%;
@@ -364,7 +393,7 @@ onMounted(()=>toGetHistoryList())
       
       .user-name{
         font-size: 16px;
-        color: #333;
+        color: var(--color-text-secondary);
       }
       // 下拉菜单自定义样式
       :deep(.custom-dropdown-menu) {
@@ -408,9 +437,20 @@ onMounted(()=>toGetHistoryList())
     }
   }
 }
-@media screen and (max-width: 758px) {
-  .mask-aside{
-    display: block;
+// 小屏时显示关闭按钮
+@media screen and (min-width: 768px) {
+  .container {
+    .close-btn {
+      display: none !important;
+    }
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .container {
+    .close-btn {
+      display: flex; // 小屏时显示
+    }
   }
 }
 </style>

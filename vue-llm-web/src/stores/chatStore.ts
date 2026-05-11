@@ -1,4 +1,4 @@
-import { llmSSE, historyChat } from "@/apis/chat"
+import { llmSSEAPI, historyChatAPI } from "@/apis/chat"
 import { defineStore } from "pinia"
 import { ref } from "vue"
 import { useSessionStore } from "@/stores/sessionStore"
@@ -11,7 +11,7 @@ export const useChatStore = defineStore('chat', () => {
   const sessionStore = useSessionStore()
   const elseStore = useElseStore()
   const sendMsg = async ({ sessionId, userId, keyword }: { sessionId: string, userId: string, keyword: string }) => {
-    await llmSSE({
+    await llmSSEAPI({
       sessionId, userId, keyword, callback: async (event) => {
         const _data = JSON.parse(event.data)
         const _curChatList = [...curChatList.value]
@@ -24,15 +24,12 @@ export const useChatStore = defineStore('chat', () => {
         curChatList.value = _curChatList
         if (elseStore.isFirstSend) {
           await sessionStore.getHistoryList({ userId })
-          const res = await historyChat({ sessionId })
-          console.log("历史对话1", res)
+          const res = await historyChatAPI({ sessionId })
           title.value = res.data.data.title
-          console.log("标题", title.value)
           elseStore.setIsFirstSend(false)
         }
       }
     })
-
   }
   // 获取某个历史对话
   const getHistoryChat = async ({ sessionId }: { sessionId: string }) => {
@@ -40,8 +37,7 @@ export const useChatStore = defineStore('chat', () => {
       return
     }
     curSessionId.value = sessionId
-    const res = await historyChat({ sessionId })
-    console.log("历史对话", res)
+    const res = await historyChatAPI({ sessionId })
     curChatList.value = res.data.data.list
     title.value = res.data.data.title
   }

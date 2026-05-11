@@ -7,7 +7,7 @@ import { fetchEventSource, type EventSourceMessage } from "@microsoft/fetch-even
 //     data: { sessionId, userId, keyword }
 //   })
 // }
-export const llmSSE = ({ sessionId, userId, keyword, callback }: { sessionId: string, userId: string, keyword: string, callback: (event: EventSourceMessage) => void }) => {
+export const llmSSEAPI = ({ sessionId, userId, keyword, callback }: { sessionId: string, userId: string, keyword: string, callback: (event: EventSourceMessage) => void }) => {
   return fetchEventSource('http://localhost:9000/api/llm', {
     method: 'POST',
     headers: {
@@ -20,7 +20,7 @@ export const llmSSE = ({ sessionId, userId, keyword, callback }: { sessionId: st
     }
   })
 }
-export const historyChat = ({ sessionId }: { sessionId: string }) => {
+export const historyChatAPI = ({ sessionId }: { sessionId: string }) => {
   return http({
     url: '/chat/list',
     method: 'GET',

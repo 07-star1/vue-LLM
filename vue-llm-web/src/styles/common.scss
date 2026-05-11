@@ -13,8 +13,8 @@ html {
 body {
   height: 100%;
   min-width: 100%;
-  min-width: 736px;
-  color: #333;
+  min-width: 500px;
+  color: var(--color-text-primary);
   font: 1em/1.4 'Microsoft Yahei', 'PingFang SC', 'Avenir', 'Segoe UI',
     'Hiragino Sans GB', 'STHeiti', 'Microsoft Sans Serif', 'WenQuanYi Micro Hei',
     sans-serif;

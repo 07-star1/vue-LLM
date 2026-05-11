@@ -1,0 +1,11 @@
+html[data-theme='dark'] {
+  // 背景色
+  --color-bg-primary: #1a1a1a;
+  // 文本颜色
+  --color-text-primary: #d5d1d1;
+  --color-text-secondary: #999;
+  // 边框
+  --border-set: 1px solid rgba(131, 127, 127, 0.3);
+  // 边框阴影
+  --border-shadow: 0 2px 4px rgba(110, 105, 105, 0.2);
+}
